@@ -12,13 +12,13 @@ void MorseOutput::blinkDelay(int duration)
 void MorseOutput::sendDot()
 {
   // Serial.println("Sending Dot");
-  blinkDelay(DOT_BLNK_LEN);
+  blinkDelay(CW_UNIT_LEN_MILLISECONDS);
 }
 
 void MorseOutput::MorseOutput::sendDash()
 {
   // Serial.println("Sending Dash");
-  blinkDelay(DASH_BLNK_LEN);
+  blinkDelay(CW_DASH_UNIT_LEN_MILLISECONDS);
 }
 
 bool MorseOutput::isFirstBitOne(const char& bp)
@@ -55,20 +55,20 @@ void MorseOutput::sendDawsAndDitsForChar(char bp) {
     {
       sendDash();
       //we have a one unit delay between parts of the letter
-      delay(DOT_BLNK_LEN);
+      delay(CW_UNIT_LEN_MILLISECONDS);
     }
     else
     {
       sendDot();
       //we have a one unit delay between parts of the letter
-      delay(DOT_BLNK_LEN);
+      delay(CW_UNIT_LEN_MILLISECONDS);
     }
   }
 
   // there is a three element delay between chacaters.  the sendDash() or
   // sendDot() functions already add a one element delay so we delay
   // two more element times.
-  delay(DOT_BLNK_LEN * 2);
+  delay(CW_UNIT_LEN_MILLISECONDS * 2);
 }
 
 unsigned int MorseOutput::getCharIndex(const char& letter)
@@ -139,7 +139,7 @@ void MorseOutput::sendMorseChar(const char& letter)
   Serial.print(letter);
   if(letter == ' ')
   {
-    delay(DOT_BLNK_LEN * 7);//there is a seven unit delay between words
+    delay(CW_SPACE_UNIT_LEN_MILLISECONDS);//there is a seven unit delay between words
   }
   else 
   {
@@ -154,5 +154,29 @@ void MorseOutput::sendStringAsCode(String &inputString)
     {
         sendMorseChar(inputString[i]);
     }
+    Serial.println();
 }
 
+String MorseOutput::getUserInput()
+{
+  // Prompt the user for input
+  Serial.println("Enter message:");
+
+  //wait for data available
+  while (Serial.available() == 0) {}
+
+  // Read the string
+  String inputString = Serial.readString();
+
+  // Trim whitespace
+  inputString.trim();
+
+  // Make uppercase string
+  inputString.toUpperCase();
+  
+  // Echo out the string to the terminal
+  // Serial.println(inputString);
+  
+  // Return the string that we received
+  return inputString;
+}

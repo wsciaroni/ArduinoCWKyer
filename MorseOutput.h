@@ -2,13 +2,30 @@
 
 #include <Arduino.h>
 
+/// @brief Class that is used to generate CW Pulses of a word on a pin
 class MorseOutput
 {
 private:
-    const int DOT_BLNK_LEN = 100;//Length of a dot is one unit
-    const int DASH_BLNK_LEN = DOT_BLNK_LEN*3;//Length of a dash is three units
+    /**
+     * @brief Length of 1 unit of CW in Milliseconds
+     * 
+     * Based on the word Paris:
+     * | WPM | MILL |
+     * | --- | ---- |
+     * |   1 | 1200 |
+     * |   5 |  240 |
+     * |  10 |  120 |
+     * |  15 |   80 |
+     * |  20 |   60 |
+     * |  25 |   48 |
+     * |  30 |   40 |
+     * |  40 |   30 |
+     */
+    const int CW_UNIT_LEN_MILLISECONDS = 80;                                // Length of a dot is one unit
+    const int CW_DASH_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS*3;   // Lenght of a dash is 3 units
+    const int CW_SPACE_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS*7;  // Length between words is 7 units
 
-    uint8_t outputPin = 13;
+    uint8_t outputPin;
 
     void sendDot();
     void sendDash();
@@ -23,11 +40,13 @@ private:
     void sendMorseChar(const char& letter);
 
 public:
-    MorseOutput(/* args */) {
+    MorseOutput(uint8_t pin) : outputPin(pin) {
         pinMode(outputPin, OUTPUT);
     }
 
     ~MorseOutput() = default;
 
     void sendStringAsCode(String& inputString);
+
+    String getUserInput();
 };
