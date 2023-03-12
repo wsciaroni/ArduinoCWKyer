@@ -6,7 +6,7 @@ void MorseOutput::sendStringAsCode(String &inputString)
 {
   for (uint8_t i = 0; i < inputString.length(); i++)
   {
-    sendMorseChar(inputString[i]);
+    sendMorseCharOrSpace(inputString[i]);
   }
   Serial.println();
 }
@@ -40,7 +40,7 @@ String MorseOutput::getUserInput()
 /**
   Either send a space or the character
 */
-void MorseOutput::sendMorseChar(const char &letter)
+void MorseOutput::sendMorseCharOrSpace(const char &letter)
 {
   // Serial.print("In sendMorseChar: ");
   Serial.print(letter);
@@ -62,20 +62,18 @@ char MorseOutput::getMorseByte(const char &letter)
 
 unsigned int MorseOutput::getCharIndex(const char &letter)
 {
-  static const unsigned int UPPER_LETTER_OFFSET = 'A' - 10;
-  static const unsigned int LOWER_LETTER_OFFSET = 'a' - 10;
-  static const unsigned int NUMBER_OFFSET = '0';
-  if (letter >= 'A' && letter <= 'Z')
+
+  if (isUpperCaseLetter(letter))
   {
-    return letter - UPPER_LETTER_OFFSET;
+    return letter + UPPER_LETTER_OFFSET;
   }
-  else if (letter >= 'a' && letter <= 'z')
+  else if (isLowerCaseLetter(letter))
   {
-    return letter - LOWER_LETTER_OFFSET;
+    return letter + LOWER_LETTER_OFFSET;
   }
-  else if (letter >= '0' && letter <= '9')
+  else if (isNumber(letter))
   {
-    return letter - NUMBER_OFFSET;
+    return letter + NUMBER_OFFSET;
   }
   else if (letter == '#')
   {
@@ -113,6 +111,21 @@ unsigned int MorseOutput::getCharIndex(const char &letter)
   {
     return 44;
   }
+}
+
+bool MorseOutput::isNumber(const char &letter)
+{
+  return letter >= '0' && letter <= '9';
+}
+
+bool MorseOutput::isUpperCaseLetter(const char &letter)
+{
+  return (letter >= 'A') && (letter <= 'Z');
+}
+
+bool MorseOutput::isLowerCaseLetter(const char &letter)
+{
+  return (letter >= 'a') && (letter <= 'z');
 }
 
 void MorseOutput::sendDawsAndDitsForChar(char bp)

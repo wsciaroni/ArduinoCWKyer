@@ -40,9 +40,13 @@ private:
 
     uint8_t outputPin;
 
-    void sendMorseChar(const char &letter);
+    void sendMorseCharOrSpace(const char &letter);
     char getMorseByte(const char &letter);
     unsigned int getCharIndex(const char &letter);
+
+    bool isNumber(const char& letter);
+    bool isUpperCaseLetter( const char& letter);
+    bool isLowerCaseLetter( const char& letter);
 
     void sendDawsAndDitsForChar(char bp);
 

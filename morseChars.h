@@ -1,5 +1,9 @@
 #pragma once
 
+const int UPPER_LETTER_OFFSET = -('A' - 10);
+const int LOWER_LETTER_OFFSET = -('a' - 10);
+const int NUMBER_OFFSET = -'0';
+
 //Here the first 1 is a start flag and the reaminder of the byte indicates the sequence.
 //For example A's sequence is 01 or dot-dash. 
 //The preceeding zeroes are shifted out until the start flag is found which is also discarded.
