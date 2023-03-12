@@ -1,15 +1,38 @@
-/*
-
-  Has the ability to output
-
-*/
-
 #include "morseChars.h"
 
-String message;
+// String message = "CQ cq CQ DE W1AZZ";
 char currSignal = '\0';
 int currMsgIdx = 0;
 uint8_t ledPin = 13;
+
+void blinkDelay(int duration);
+void sendDot();
+void sendDash();
+bool isFirstBitOne(const char& bp);
+void shiftLeftOne(char& bp);
+void sendDawsAndDitsForChar(char bp);
+unsigned int getCharIndex(const char& letter);
+char getMorseByte(const char& letter);
+void sendMorseChar(const char& letter);
+
+String getInput();
+
+void setup() {
+  Serial.begin(9600); // open the serial port at 9600 bps:
+  // initialize digital pin 13 as an output. (Same pin used in Blink)
+  pinMode(ledPin, OUTPUT);
+}
+
+// the loop function runs over and over again forever
+//It will move from each letter in the 'message' variable 
+void loop() 
+{ 
+  String inputString = getInput();
+  for(int i = 0; i < inputString.length(); i++) {
+    sendMorseChar(inputString[i]);
+  }
+  Serial.println();
+}
 
 void blinkDelay(int duration)
 {
@@ -30,21 +53,27 @@ void sendDash()
   blinkDelay(DASH_BLNK_LEN);
 }
 
-void sendDawsAndDitsForChar(byte bp) {
+bool isFirstBitOne(const char& bp)
+{
+  return (bp & 0b10000000) != 0;
+}
+
+void shiftLeftOne(char& bp)
+{
+  bp = bp << 1;
+}
+
+void sendDawsAndDitsForChar(char bp) {
   bool isFirstFound = false;
-  byte ditordah = 0;
+  bool isDaw = 0;
 
   // for each bit in the byte,
-  for (unsigned int i = 0; i < 8; i++, bp = (bp << 1))
+  for (unsigned int i = 0; i < 8; i++, shiftLeftOne(bp))
   {
-    // Serial.print(i);
-    // Serial.print(": ");
-    ditordah = (bp & 0b10000000); // Get the first bit of the sequence
-    // Serial.println(ditordah);
-    // if havent
+    bool isDaw = isFirstBitOne(bp);
     if (!isFirstFound)
     {
-      if (ditordah != 0)
+      if (isDaw)
       {
         isFirstFound = true;
       }
@@ -54,15 +83,15 @@ void sendDawsAndDitsForChar(byte bp) {
       }
     }
     // if we've seen our start flag then send the dash or dot based on the bit
-    else if (ditordah == 0)
+    else if (isDaw)
     {
-      sendDot();
+      sendDash();
       //we have a one unit delay between parts of the letter
       delay(DOT_BLNK_LEN);
     }
     else
     {
-      sendDash();
+      sendDot();
       //we have a one unit delay between parts of the letter
       delay(DOT_BLNK_LEN);
     }
@@ -128,15 +157,18 @@ unsigned int getCharIndex(const char& letter)
   }
 }
 
-byte getMorseByte(const char& letter)
+char getMorseByte(const char& letter)
 {
   return morse_table[getCharIndex(letter)];
 }
 
+/**
+  Either send a space or the character
+*/
 void sendMorseChar(const char& letter)
 {
-  // Serial.print("In sendMorseChar");
-  // Serial.println(letter);
+  // Serial.print("In sendMorseChar: ");
+  Serial.print(letter);
   if(letter == ' ')
   {
     delay(DOT_BLNK_LEN * 7);//there is a seven unit delay between words
@@ -148,23 +180,26 @@ void sendMorseChar(const char& letter)
   }
 }
 
-void setup() {
-  Serial.begin(9600); // open the serial port at 9600 bps:
-  // initialize digital pin 13 as an output. (Same pin used in Blink)
-  pinMode(ledPin, OUTPUT);
-
-  message = "CQ cq CQ DE W1AZZ";
-}
-
-// the loop function runs over and over again forever
-//It will move from each letter in the 'message' variable 
-void loop() 
-{ 
+String getInput()
+{
+  // Prompt the user for input
   Serial.println("Enter message:");
-  while (Serial.available() == 0) {}     //wait for data available
-  String inputString = Serial.readString();  //read until timeout
-  inputString.trim();  
-  for(int i = 0; i < inputString.length(); i++) {
-    sendMorseChar(inputString[i]);
-  }
+
+  //wait for data available
+  while (Serial.available() == 0) {}
+
+  // Read the string
+  String inputString = Serial.readString();
+
+  // Trim whitespace
+  inputString.trim();
+
+  // Make uppercase string
+  inputString.toUpperCase();
+  
+  // Echo out the string to the terminal
+  // Serial.println(inputString);
+  
+  // Return the string that we received
+  return inputString;
 }
