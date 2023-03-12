@@ -1,5 +1,4 @@
-const int DOT_BLNK_LEN = 100;//Length of a dot is one unit
-const int DASH_BLNK_LEN = DOT_BLNK_LEN*3;//Length of a dash is three units
+#pragma once
 
 //Here the first 1 is a start flag and the reaminder of the byte indicates the sequence.
 //For example A's sequence is 01 or dot-dash. 
