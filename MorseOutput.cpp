@@ -37,9 +37,38 @@ String MorseOutput::getUserInput()
   return inputString;
 }
 
-/**
-  Either send a space or the character
-*/
+bool MorseOutput::isChangeSpeedCommand(const String &possibleCommand)
+{
+  return (possibleCommand.length() > 1) && (possibleCommand[0] == '!');
+}
+
+void MorseOutput::handleCwChangeSpeedCommand(String &command)
+{
+  // Strip the first char, then convert to int
+  String numberAsString = stripFirstCharOffString(command);
+  Serial.println("Changing output speed to " + numberAsString + " wordsPerMinute.");
+  updateCWSpeed(numberAsString.toInt());
+}
+
+void MorseOutput::updateCWSpeed(int wordsPerMinute)
+{
+  int unitTimeMilliseconds = 60000 / (50 * wordsPerMinute);
+  updateCWUnitLength(unitTimeMilliseconds);
+}
+
+String MorseOutput::stripFirstCharOffString(const String &inputString)
+{
+  return inputString.substring(1);
+}
+
+void MorseOutput::updateCWUnitLength(int newUnitLengthMilliseconds)
+{
+  CW_UNIT_LEN_MILLISECONDS = newUnitLengthMilliseconds;          // Length of a dit is one unit
+  CW_DAW_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 3;   // Lenght of a daw is 3 units
+  CW_SPACE_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 7; // Length between words is 7 units
+  CW_PARTIAL_SPACE_BETWEEN_CHARS = CW_DAW_UNIT_LEN_MILLISECONDS - CW_UNIT_LEN_MILLISECONDS;
+}
+
 void MorseOutput::sendMorseCharOrSpace(const char &letter)
 {
   // Serial.print("In sendMorseChar: ");

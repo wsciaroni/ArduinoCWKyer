@@ -16,6 +16,11 @@ public:
     void sendStringAsCode(String &inputString);
     String getUserInput();
 
+    bool isChangeSpeedCommand(const String &possibleCommand);
+    void handleCwChangeSpeedCommand(String &command);
+
+    void updateCWSpeed(int wordsPerMinute);
+
 protected:
 private:
     /**
@@ -33,20 +38,24 @@ private:
      * |  30 |   40 |
      * |  40 |   30 |
      */
-    const int CW_UNIT_LEN_MILLISECONDS = 80;                                 // Length of a dit is one unit
-    const int CW_DAW_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 3;   // Lenght of a daw is 3 units
-    const int CW_SPACE_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 7; // Length between words is 7 units
-    const int CW_PARTIAL_SPACE_BETWEEN_CHARS = CW_DAW_UNIT_LEN_MILLISECONDS - CW_UNIT_LEN_MILLISECONDS;
+    int CW_UNIT_LEN_MILLISECONDS = 80;                                 // Length of a dit is one unit
+    int CW_DAW_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 3;   // Lenght of a daw is 3 units
+    int CW_SPACE_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 7; // Length between words is 7 units
+    int CW_PARTIAL_SPACE_BETWEEN_CHARS = CW_DAW_UNIT_LEN_MILLISECONDS - CW_UNIT_LEN_MILLISECONDS;
 
     uint8_t outputPin;
+
+    String stripFirstCharOffString(const String &inputString);
+
+    void updateCWUnitLength(int newUnitLengthMilliseconds);
 
     void sendMorseCharOrSpace(const char &letter);
     char getMorseByte(const char &letter);
     unsigned int getCharIndex(const char &letter);
 
-    bool isNumber(const char& letter);
-    bool isUpperCaseLetter( const char& letter);
-    bool isLowerCaseLetter( const char& letter);
+    bool isNumber(const char &letter);
+    bool isUpperCaseLetter(const char &letter);
+    bool isLowerCaseLetter(const char &letter);
 
     void sendDawsAndDitsForChar(char bp);
 
