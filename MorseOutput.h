@@ -36,7 +36,7 @@ private:
     const int CW_UNIT_LEN_MILLISECONDS = 80;                                 // Length of a dit is one unit
     const int CW_DAW_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 3;   // Lenght of a daw is 3 units
     const int CW_SPACE_UNIT_LEN_MILLISECONDS = CW_UNIT_LEN_MILLISECONDS * 7; // Length between words is 7 units
-    const int CW_PARTIAL_SPACE_BETWEEN_CHARS = CW_UNIT_LEN_MILLISECONDS * 2;
+    const int CW_PARTIAL_SPACE_BETWEEN_CHARS = CW_DAW_UNIT_LEN_MILLISECONDS - CW_UNIT_LEN_MILLISECONDS;
 
     uint8_t outputPin;
 
