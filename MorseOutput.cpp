@@ -2,74 +2,64 @@
 
 #include "morseChars.h"
 
-void MorseOutput::blinkDelay(int duration)
+void MorseOutput::sendStringAsCode(String &inputString)
 {
-  digitalWrite(outputPin, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(duration);// wait for the set duration
-  digitalWrite(outputPin, LOW);    // turn the LED off by making the voltage LOW
+    for(uint8_t i = 0; i < inputString.length(); i++)
+    {
+        sendMorseChar(inputString[i]);
+    }
+    Serial.println();
 }
 
-void MorseOutput::sendDot()
+String MorseOutput::getUserInput()
 {
-  // Serial.println("Sending Dot");
-  blinkDelay(CW_UNIT_LEN_MILLISECONDS);
+  // Prompt the user for input
+  Serial.println("Enter message:");
+
+  //wait for data available
+  while (Serial.available() == 0) {}
+
+  // Read the string
+  String inputString = Serial.readString();
+
+  // Trim whitespace
+  inputString.trim();
+
+  // Make uppercase string
+  inputString.toUpperCase();
+  
+  // Echo out the string to the terminal
+  // Serial.println(inputString);
+  
+  // Return the string that we received
+  return inputString;
 }
 
-void MorseOutput::MorseOutput::sendDash()
+
+/**
+  Either send a space or the character
+*/
+void MorseOutput::sendMorseChar(const char& letter)
 {
-  // Serial.println("Sending Dash");
-  blinkDelay(CW_DASH_UNIT_LEN_MILLISECONDS);
-}
-
-bool MorseOutput::isFirstBitOne(const char& bp)
-{
-  return (bp & 0b10000000) != 0;
-}
-
-void MorseOutput::shiftLeftOne(char& bp)
-{
-  bp = bp << 1;
-}
-
-void MorseOutput::sendDawsAndDitsForChar(char bp) {
-  bool isFirstFound = false;
-  bool isDaw = 0;
-
-  // for each bit in the byte,
-  for (unsigned int i = 0; i < 8; i++, shiftLeftOne(bp))
+  // Serial.print("In sendMorseChar: ");
+  Serial.print(letter);
+  if(letter == ' ')
   {
-    bool isDaw = isFirstBitOne(bp);
-    if (!isFirstFound)
-    {
-      if (isDaw)
-      {
-        isFirstFound = true;
-      }
-      else
-      {
-        // Keep going until a set bit is found
-      }
-    }
-    // if we've seen our start flag then send the dash or dot based on the bit
-    else if (isDaw)
-    {
-      sendDash();
-      //we have a one unit delay between parts of the letter
-      delay(CW_UNIT_LEN_MILLISECONDS);
-    }
-    else
-    {
-      sendDot();
-      //we have a one unit delay between parts of the letter
-      delay(CW_UNIT_LEN_MILLISECONDS);
-    }
+    delay(CW_SPACE_UNIT_LEN_MILLISECONDS);//there is a seven unit delay between words
   }
-
-  // there is a three element delay between chacaters.  the sendDash() or
-  // sendDot() functions already add a one element delay so we delay
-  // two more element times.
-  delay(CW_UNIT_LEN_MILLISECONDS * 2);
+  else 
+  {
+    byte bp = getMorseByte(letter);
+    sendDawsAndDitsForChar(bp);
+  }
 }
+
+
+char MorseOutput::getMorseByte(const char& letter)
+{
+  return morse_table[getCharIndex(letter)];
+}
+
 
 unsigned int MorseOutput::getCharIndex(const char& letter)
 {
@@ -125,58 +115,69 @@ unsigned int MorseOutput::getCharIndex(const char& letter)
   }
 }
 
-char MorseOutput::getMorseByte(const char& letter)
-{
-  return morse_table[getCharIndex(letter)];
-}
+void MorseOutput::sendDawsAndDitsForChar(char bp) {
+  bool isFirstFound = false;
+  bool isDaw = 0;
 
-/**
-  Either send a space or the character
-*/
-void MorseOutput::sendMorseChar(const char& letter)
-{
-  // Serial.print("In sendMorseChar: ");
-  Serial.print(letter);
-  if(letter == ' ')
+  // for each bit in the byte,
+  for (unsigned int i = 0; i < 8; i++, shiftLeftOne(bp))
   {
-    delay(CW_SPACE_UNIT_LEN_MILLISECONDS);//there is a seven unit delay between words
-  }
-  else 
-  {
-    byte bp = getMorseByte(letter);
-    sendDawsAndDitsForChar(bp);
-  }
-}
-
-void MorseOutput::sendStringAsCode(String &inputString)
-{
-    for(uint8_t i = 0; i < inputString.length(); i++)
+    bool isDaw = isFirstBitOne(bp);
+    if (!isFirstFound)
     {
-        sendMorseChar(inputString[i]);
+      if (isDaw)
+      {
+        isFirstFound = true;
+      }
+      else
+      {
+        // Keep going until a set bit is found
+      }
     }
-    Serial.println();
+    // if we've seen our start flag then send the dash or dot based on the bit
+    else if (isDaw)
+    {
+      sendDaw();
+      //we have a one unit delay between parts of the letter
+      delay(CW_UNIT_LEN_MILLISECONDS);
+    }
+    else
+    {
+      sendDit();
+      //we have a one unit delay between parts of the letter
+      delay(CW_UNIT_LEN_MILLISECONDS);
+    }
+  }
+
+  // After the last dit or daw in the char, we've added one unit of space. Add two more here
+  delay(CW_PARTIAL_SPACE_BETWEEN_CHARS);
 }
 
-String MorseOutput::getUserInput()
+bool MorseOutput::isFirstBitOne(const char& bp)
 {
-  // Prompt the user for input
-  Serial.println("Enter message:");
+  return (bp & 0b10000000) != 0;
+}
 
-  //wait for data available
-  while (Serial.available() == 0) {}
+void MorseOutput::shiftLeftOne(char& bp)
+{
+  bp = bp << 1;
+}
 
-  // Read the string
-  String inputString = Serial.readString();
+void MorseOutput::sendDit()
+{
+  // Serial.println("Sending Dot");
+  outputHighForDuration(CW_UNIT_LEN_MILLISECONDS);
+}
 
-  // Trim whitespace
-  inputString.trim();
+void MorseOutput::MorseOutput::sendDaw()
+{
+  // Serial.println("Sending Dash");
+  outputHighForDuration(CW_DAW_UNIT_LEN_MILLISECONDS);
+}
 
-  // Make uppercase string
-  inputString.toUpperCase();
-  
-  // Echo out the string to the terminal
-  // Serial.println(inputString);
-  
-  // Return the string that we received
-  return inputString;
+void MorseOutput::outputHighForDuration(int duration)
+{
+  digitalWrite(outputPin, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(duration);// wait for the set duration
+  digitalWrite(outputPin, LOW);    // turn the LED off by making the voltage LOW
 }
